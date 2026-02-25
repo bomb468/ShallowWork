@@ -55,6 +55,10 @@ android {
 }
 
 dependencies {
+    implementation("com.airbnb.android:lottie-compose:6.4.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.datastore:datastore:1.2.0")
+    implementation("androidx.datastore:datastore-preferences-core:1.2.0")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.room:room-runtime:2.8.4")
     implementation(libs.androidx.compose.material3)

@@ -1,13 +1,19 @@
 package com.example.tutorialrun2
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,11 +22,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,8 +37,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.inset
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
@@ -45,7 +57,8 @@ import com.example.tutorialrun2.screen.RequestPermissionScreen
 import com.example.tutorialrun2.screen.StartServicePage
 import com.example.tutorialrun2.screen.UiPage
 import com.example.tutorialrun2.ui.theme.TutorialRun2Theme
-import com.example.tutorialrun2.viewmodel.MainViewModel
+import com.example.tutorialrun2.viewmodel.MainActivityViewModel
+import com.example.tutorialrun2.viewmodel.MainNavigationViewModel
 import com.example.tutorialrun2.viewmodel.Screen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -54,30 +67,33 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val viewModel : MainActivityViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            TutorialRun2Theme {
-                MainNavigation()
+            TutorialRun2Theme(darkTheme = isSystemInDarkTheme(), dynamicColor = false) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainNavigation()
+                }
             }
         }
     }
 }
-fun provideViewModels() : ViewModelProvider.Factory{
+fun provideMainViewModel() : ViewModelProvider.Factory {
     return viewModelFactory {
         initializer {
-            CircleViewModel()
-        }
-        initializer {
             val savedStateHandle = createSavedStateHandle()
-            MainViewModel(savedStateHandle)
+            MainNavigationViewModel(savedStateHandle)
         }
     }
 }
 @Composable
 fun MainNavigation(){
-    val mainViewModel = viewModel<MainViewModel>()
+    val mainViewModel = viewModel<MainNavigationViewModel>(factory = provideMainViewModel())
     NavDisplay(
         entryDecorators = listOf(
             // Add the default decorators for managing scenes and saving state
@@ -96,7 +112,10 @@ fun MainNavigation(){
                     UiPage()
                 }
                 is Screen.RequestPermissionPage -> NavEntry(key){
-                    RequestPermissionScreen()
+                    RequestPermissionScreen {
+                        mainViewModel.backstack.removeLastOrNull()
+                        mainViewModel.backstack.add(Screen.StartServicePage)
+                    }
                 }
             }
         }
@@ -213,7 +232,7 @@ class CircleViewModel : ViewModel(){
 
 @Preview(showBackground = true)
 @Composable
-fun Preview() {
+private fun Preview() {
     TutorialRun2Theme {
         MainNavigation()
     }
