@@ -62,6 +62,8 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.room:room-runtime:2.8.4")
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.foundation.layout)
+    implementation(libs.androidx.compose.ui.text)
     ksp("androidx.room:room-compiler:2.8.4")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

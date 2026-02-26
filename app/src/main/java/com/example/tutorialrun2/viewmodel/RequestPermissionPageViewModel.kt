@@ -28,16 +28,10 @@ class RequestPermissionPageViewModel @Inject constructor(@param:ApplicationConte
     var hasDeniedPermissionValue : Boolean? by mutableStateOf(null)
 
     init{
-        /*
-        viewModelScope.launch {
-            delay(5000)
-            hasDeniedPermissionValue=false
-        }*/
         viewModelScope.launch{
             context.dataStore.data
                 .map{
                     preferences ->
-                        delay(5000)
                         preferences[key] ?: false
                 }
                 .catch {
